@@ -1,4 +1,4 @@
-from keras import backend as K
+ from keras import backend as K
 from keras.optimizers import Optimizer
 from keras.legacy import interfaces
 from tensorflow.python.ops import math_ops
@@ -6,7 +6,7 @@ from tensorflow.python.ops import math_ops
 class AdamT(Optimizer):
  
 
-    def __init__(self, learning_rate=0.001, beta_1=0.9,gamma_1=0.9, beta_2=0.999, gamma_2=0.999, ph1_1=0.5, phi_2=0.5, amsgrad=False, **kwargs):
+    def __init__(self, learning_rate=0.001, beta_1=0.9,beta_2=0.999, beta_3=0.9,beta_4=0.999,gamma_1=0.9, gamma_2=0.999, phi_1=0.5, phi_2=0.5, amsgrad=False, **kwargs):
         self.initial_decay = kwargs.pop('decay', 0.0)
         self.epsilon = kwargs.pop('epsilon', K.epsilon())
         learning_rate = kwargs.pop('lr', learning_rate)
@@ -16,6 +16,8 @@ class AdamT(Optimizer):
             self.learning_rate = K.variable(learning_rate, name='learning_rate')
             self.beta_1 = K.variable(beta_1, name='beta_1')
             self.beta_2 = K.variable(beta_2, name='beta_2')
+            self.beta_3 = K.variable(beta_3, name='beta_3')
+            self.beta_4 = K.variable(beta_4, name='beta_4')
             self.gamma_1 = K.variable(gamma_1, name='gamma_1')
             self.gamma_2 = K.variable(gamma_2, name='gamma_2')
             self.phi_1 = K.variable(phi_1, name='phi_1')
@@ -86,9 +88,15 @@ class AdamT(Optimizer):
             bm_t = (self.gamma_1*self.phi_1)*bm + (1-self.gamma_1)*(lm_t-lm)
             bv_t = (self.gamma_2*self.phi_2)*bv + (1-self.gamma_2)*(lv_t-lv)
             
-            m_t= lm_t/(1-self.beta_1) + [(1-self.gamma_1*self.phi_1)*bm_t]/[(1-self.gamma_1)*(1-K.pow((self.gamma_1*self.phi_1), t))]
             
-            v_t= lv_t/(1-self.beta_2) + [(1-self.gamma_2*self.phi_2)*bv_t]/[(1-self.gamma_2)*(1-K.pow((self.gamma_2*self.phi_2), t))]
+            #f1=(1-self.gamma_1*self.phi_1)/ (1-self.gamma_1)*(1- (self.gamma_1*self.phi_1)**t) is approximately 5
+            #f2= ((1-self.gamma_2*self.phi_2)*bv_t)/((1-self.gamma_2)*(1-(self.gamma_2*self.phi_2)**t)) is approximately 5
+            
+            m_t= lm_t +((1-self.gamma_1*self.phi_1)*bm_t*5 ) 
+  
+            
+            v_t= lv_t  +((1-self.gamma_2*self.phi_2)*bv_t*5 ) 
+           
             
  
             
