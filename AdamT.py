@@ -1,4 +1,4 @@
- from keras import backend as K
+from keras import backend as K
 from keras.optimizers import Optimizer
 from keras.legacy import interfaces
 from tensorflow.python.ops import math_ops
